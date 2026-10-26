@@ -125,15 +125,16 @@ using five in-corpus and five out-of-scope retrieval distances. -->
 | Out-of-scope 4 | No | |
 | Out-of-scope 5 | No | |
 
+
 ## How I Used AI
 
-<!-- Complete this section in Milestone 5.
-Describe two specific examples of how you used AI,
-what it suggested, and what you changed or decided. -->
+**1. Creating my chunking strategy**
 
-**1.**
+I used ChatGPT to help me understand how to improve the starter's chunking function. I explained that my campus_life corpus had 88 documents with an average length of 317 characters. ChatGPT suggested using paragraph-based chunking with a target of 400 characters and no overlap. I added the suggested function to chunker.py and tested it. The new strategy produced 100 chunks instead of 88, and I checked five sample chunks to make sure the information was readable.
 
-**2.**
+**2. Testing retrieval and choosing a relevance cutoff**
+
+I used ChatGPT to help me understand the retrieval distances from my test questions. After running five campus-related questions and five unrelated questions, I shared the results. ChatGPT helped me compare the distances and suggested keeping the cutoff at 0.6. I decided to keep that value because all five campus questions were answered correctly, while all five unrelated questions were rejected.
 
 ---
 
