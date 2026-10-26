@@ -145,13 +145,79 @@ Keep your Unit 1 documentation unchanged. -->
 
 ## Run Log — Before
 
+
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 | | | | |
-| 2. Every answer names a source | 5 of 5 | | | | |
-| 3. Gate stops out-of-corpus questions | 4 of 5 | | | | |
-| 4. Chunks contain complete information | 4 of 5 | | | | |
-| 5. Answers include expected information | 4 of 5 | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Chunks contain complete information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Answers include expected information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+### Evidence from the Before Evaluation
+
+**Criterion 1 — Retrieved chunks contain the answer**
+
+Question: How quickly do student parking permits for the west lots sell out?
+
+Best distance: 0.1928
+
+Sources retrieved: admin_parking_permits.txt, advising_registration.txt, dining_halden_hall.txt, transit_shuttle.txt, transit_walking.txt
+
+The retrieved document admin_parking_permits.txt contains the information that west lot permits sell out in about three days.
+
+Produced by: `store.py::search`
+
+**Criterion 2 — Every answer names a source**
+
+Question: How are juniors and seniors prioritized in the housing lottery?
+
+Actual output:
+
+    Juniors and seniors are ordered first by accumulated credit hours, with any ties broken randomly.
+
+    Source: admin_housing_lottery.txt
+
+Produced by: `run_eval.py::main`
+
+**Criterion 3 — Relevance gate stops unrelated questions**
+
+Actual output from the evaluation:
+
+    Out-of-scope questions (the gate should refuse these):
+    refused (best distance 0.825) What is the capital of Mongolia?
+    refused (best distance 0.934) How do I change the oil in a diesel engine?
+    refused (best distance 0.886) Who won the 1994 World Cup?
+    refused (best distance 0.844) What is the recommended dosage of ibuprofen for a headache?
+    refused (best distance 0.891) How do I write a for loop in Rust?
+    gate refused 5 of 5
+
+Produced by: `run_eval.py::check_out_of_scope`
+
+**Criterion 4 — Chunks contain complete information**
+
+Sample from the chunk inspection:
+
+    On the add/drop deadline
+
+    You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
+
+Source: `admin_add_drop_deadline.txt#0`
+
+Produced by: `chunker.py::split_documents`
+
+**Criterion 5 — Answers include expected information**
+
+Question: How much does it cost to wash clothes at Morrow House?
+
+Expected phrase: $1.50
+
+Actual output:
+
+    It costs $1.50 to wash clothes at Morrow House (housing_morrow_house.txt and housing_morrow_house_laundry.txt).
+
+Produced by: `run_eval.py::main`
+
 
 <!-- Paste real evaluation outputs here during Unit 2.
 Include the file and function that produced them. -->
