@@ -236,40 +236,152 @@ One example is my question about the adviser hold needed for registration. The s
 
 This suggests that retrieval ranking could still be improved. The system currently relies on semantic similarity, which may not always rank documents containing specific terms near the top. In the future, I would make my first criterion stricter by requiring the correct information to appear in the top three retrieved chunks.
 
+
 ## The Improvement
 
 **What I changed:**
 
-<!-- Complete after implementing one improvement in Milestone 4. -->
+I added hybrid search to my retrieval system by modifying the search function in store.py. Before this change, the system used semantic similarity to find relevant document chunks. I added BM25 keyword matching and combined it with semantic similarity using a weight of 70% semantic similarity and 30% keyword matching.
+
+I kept the same campus_life corpus, chunking strategy, and relevance cutoff of 0.6 so I could compare the results fairly.
 
 **Why I picked it:**
 
-<!-- Explain how this improvement relates to the limitation identified in Diagnoses. -->
+I chose hybrid search because my before-evaluation showed that the correct document for my registration question appeared fifth in the retrieved results. Its distance was 0.551, which was higher than the distances for my other test questions.
+
+I wanted to see whether adding keyword matching would help the system rank documents containing specific terms closer to the top.
 
 ### Run Log — After
 
-<!-- Run python run_eval.py --label after after making exactly one system improvement. Use the actual results to complete the table. -->
+I ran `python run_eval.py --label after` after modifying store.py. The evaluation tested all five campus_life questions three times with caching disabled.
+
+The completed results were saved in `results/run_2026-10-26_0338_after.md`.
+
+Produced by: `run_eval.py::main`  
+Retrieval: `store.py::search`  
+Chunking: `chunker.py::split_documents`  
+Corpus: `campus_life`  
+Top-k: 5  
+Relevance cutoff: 0.6
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 | | | | |
-| 2. Every answer names a source | 5 of 5 | | | | |
-| 3. Gate stops out-of-corpus questions | 4 of 5 | | | | |
-| 4. Chunks contain complete information | 4 of 5 | | | | |
-| 5. Answers include expected information | 4 of 5 | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Chunks contain complete information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Answers include expected information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+Criterion 4 was checked using the same five sample chunks because the chunking function was not changed. Criterion 3 was measured in one deterministic pass, as required by the assignment.
 
 ### Evidence from the After Evaluation
 
-<!-- Paste actual outputs for all five criteria from the after-evaluation results. Include filenames and functions. -->
+**Criterion 1 — Retrieved chunks contain the answer**
+
+Question: How quickly do student parking permits for the west lots sell out?
+
+Best distance: 0.1928
+
+Sources retrieved: admin_parking_permits.txt, dining_halden_hall.txt, dining_verrill_street_grill.txt, dining_verrill_street_grill_followup.txt, transit_shuttle.txt
+
+Actual answer from run 1:
+
+    Student parking permits for the west lots sell out in about three days (admin_parking_permits.txt).
+
+Source: `admin_parking_permits.txt`  
+Produced by: `store.py::search` and `run_eval.py::main`
+
+**Criterion 2 — Every answer names a source**
+
+Question: How are juniors and seniors prioritized in the housing lottery?
+
+Actual output from run 1:
+
+    Juniors and seniors are ordered by accumulated credit hours first, and any ties are broken randomly in the housing lottery.
+
+    Source: admin_housing_lottery.txt
+
+Produced by: `run_eval.py::main`
+
+**Criterion 3 — Relevance gate stops unrelated questions**
+
+Actual evaluation results:
+
+    What is the capital of Mongolia?
+    Best distance: 0.869
+    Gate: refused
+
+    How do I change the oil in a diesel engine?
+    Best distance: 0.934
+    Gate: refused
+
+    Who won the 1994 World Cup?
+    Best distance: 0.886
+    Gate: refused
+
+    What is the recommended dosage of ibuprofen for a headache?
+    Best distance: 0.860
+    Gate: refused
+
+    How do I write a for loop in Rust?
+    Best distance: 0.891
+    Gate: refused
+
+    Gate refused 5 of 5.
+
+Produced by: `run_eval.py::check_out_of_scope`
+
+**Criterion 4 — Chunks contain complete information**
+
+Sample chunk:
+
+    On the add/drop deadline
+
+    You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
+
+Source: `admin_add_drop_deadline.txt#0`  
+Produced by: `chunker.py::split_documents`
+
+My chunking strategy was unchanged during Unit 2. The five sampled chunks still contained readable and complete thoughts.
+
+**Criterion 5 — Answers include expected information**
+
+Question: How much does it cost to wash clothes at Morrow House?
+
+Expected phrase: $1.50
+
+Actual output from run 1:
+
+    It costs $1.50 to wash clothes at Morrow House.
+
+    Source: housing_morrow_house_laundry.txt
+
+Produced by: `run_eval.py::main`
+
+The answer included the expected information, and all five questions contained their expected phrases across all three runs.
 
 **Did it help?**
 
-<!-- Compare the before and after results. Explain whether the change improved, worsened, or did not affect performance. -->
+Hybrid search slightly improved the ranking for my registration question. Before the change, advising_registration.txt appeared fifth in the retrieved results. After the change, it appeared fourth.
+
+However, the overall results stayed the same. All five acceptance criteria were met before and after the improvement. The retrieval distances for my five campus questions also stayed the same.
+
+This shows that hybrid search made a small difference in the order of the retrieved documents, but it did not improve the overall accuracy of my answers for these particular test questions.
 
 ## What's Still Broken
 
-<!-- Complete in Milestone 5. Explain any criteria still missed after the improvement, what you would do next, and why you stopped. If all criteria are met, explain any remaining limitations honestly. -->
+After adding hybrid search, my system still met all five acceptance criteria, so I did not find any failures in my final evaluation.
+
+However, I noticed that the registration question still had a relatively high retrieval distance of 0.551, and its correct document only moved from fifth to fourth place. This suggests that retrieval ranking could still be improved.
+
+If I continued working on the project, I would test more questions involving specific campus requirements and compare different search weights to see whether the correct documents could rank higher.
+
+I stopped after making one improvement because this unit required me to change one part of the system and measure its effect.
 
 ## What I'd Do Differently
 
-<!-- Complete in Milestone 5. Explain which acceptance criterion you would write differently now that you have seen the results and why. -->
+If I could write my acceptance criteria again, I would make my first criterion more specific. Originally, I only required the system to retrieve a chunk containing the answer for at least four out of five questions.
+
+After testing, I realized that this does not measure how highly the correct document is ranked. My system could retrieve the right answer in fifth place and still meet the criterion.
+
+Next time, I would require the correct information to appear within the top three retrieved chunks for at least four out of five questions. This would give me a better way to measure retrieval quality.
