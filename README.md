@@ -69,11 +69,39 @@ The following five chunks were generated using my custom chunking function.
 
     The bad: known damp problem on the ground floor; two rooms were taken offline in 2024.
 
+
 ## Sample Answer
 
-<!-- Complete this section in Milestone 4.
-Paste one complete question and answer from your current system,
-including the source line. -->
+**Question:**
+
+How are housing lottery numbers assigned to rising sophomores?
+
+**Answer:**
+
+Rising sophomores get a number drawn at random for the housing lottery.
+
+Source: admin_housing_lottery.txt
+
+Sources retrieved: admin_dining_dollars.txt, admin_housing_lottery.txt, admin_meal_plan_changes.txt, advising_registration.txt, housing_tamsin_court.txt
+
+**My relevance cutoff:** 0.6
+
+I decided to keep the relevance cutoff at 0.6 after comparing five questions that my campus_life documents cover with five unrelated questions. The in-corpus questions had distances ranging from 0.186 to 0.551, while the out-of-scope questions ranged from 0.825 to 0.934.
+
+There was a clear gap between the two groups. Keeping the cutoff at 0.6 allows all five of my campus-related questions to be answered while rejecting all five unrelated questions. I also noticed that the registration question had a higher distance of 0.551, so setting the cutoff too low could incorrectly reject a question the documents can answer.
+
+| Question | In corpus? | Best distance |
+|---|---|---|
+| How are housing lottery numbers assigned to rising sophomores? | Yes | 0.202 |
+| How are juniors and seniors prioritized in the housing lottery? | Yes | 0.205 |
+| How quickly do student parking permits for the west lots sell out? | Yes | 0.193 |
+| How much does it cost to wash clothes at Morrow House? | Yes | 0.186 |
+| What must students have lifted before registering for classes? | Yes | 0.551 |
+| What is the capital of Mongolia? | No | 0.825 |
+| How do I change the oil in a diesel engine? | No | 0.934 |
+| Who won the 1994 World Cup? | No | 0.886 |
+| What is the recommended dosage of ibuprofen for a headache? | No | 0.844 |
+| How do I write a for loop in Rust? | No | 0.891 |
 
 **Question:**
 
