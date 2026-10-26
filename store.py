@@ -21,6 +21,7 @@ import os
 import shutil
 from dataclasses import dataclass
 
+
 # Must be set BEFORE chromadb is imported. Without it, some Chroma versions
 # print "Failed to send telemetry event ..." on every single call — which looks
 # exactly like a real error, isn't one, and cost a previous cohort a lot of
@@ -28,6 +29,7 @@ from dataclasses import dataclass
 os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
 
 import chromadb  # noqa: E402
+from rank_bm25 import BM25Okapi
 
 import config
 from chunker import Chunk
@@ -178,6 +180,7 @@ def build_index(
     return len(chunks)
 
 
+
 def search(
     question: str,
     top_k: int | None = None,
@@ -185,9 +188,8 @@ def search(
     variant: str = "default",
 ) -> list[Result]:
     """
-    Retrieve the chunks closest in meaning to a question.
-
-    Returns them nearest-first, each with its distance.
+    Hybrid search using semantic similarity and BM25 keyword matching.
+    Semantic cosine distances are preserved for the relevance gate.
     """
     top_k = top_k or config.TOP_K
     name = config.collection_name(corpus, variant)
@@ -199,15 +201,55 @@ def search(
             f"No index called '{name}'. Run `python app.py index` first."
         ) from exc
 
+    count = collection.count()
+    if count == 0:
+        return []
+
+    # Semantic retrieval
     raw = collection.query(
         query_embeddings=embed([question]),
-        n_results=min(top_k, collection.count()),
+        n_results=count,
     )
 
-    results: list[Result] = []
-    for text, meta, distance in zip(
-        raw["documents"][0], raw["metadatas"][0], raw["distances"][0]
+    texts = raw["documents"][0]
+    metas = raw["metadatas"][0]
+    distances = raw["distances"][0]
+
+    # Keyword retrieval using BM25
+    tokenized_docs = [
+        text.lower().split() for text in texts
+    ]
+
+    bm25 = BM25Okapi(tokenized_docs)
+    keyword_scores = bm25.get_scores(question.lower().split())
+
+    # Combine semantic similarity and keyword scores
+    max_keyword = max(keyword_scores) if len(keyword_scores) else 0
+
+    ranked = []
+
+    for text, meta, distance, keyword_score in zip(
+        texts, metas, distances, keyword_scores
     ):
+        semantic_score = 1 - float(distance)
+
+        normalized_keyword = (
+            float(keyword_score) / max_keyword
+            if max_keyword > 0 else 0
+        )
+
+        combined_score = (
+            0.7 * semantic_score +
+            0.3 * normalized_keyword
+        )
+
+        ranked.append((combined_score, text, meta, distance))
+
+    ranked.sort(key=lambda item: item[0], reverse=True)
+
+    results = []
+
+    for score, text, meta, distance in ranked[:top_k]:
         results.append(
             Result(
                 text=text,
@@ -217,7 +259,9 @@ def search(
                 produced_by=str(meta.get("produced_by", "unknown")),
             )
         )
+
     return results
+
 
 
 def index_exists(corpus: str | None = None, variant: str = "default") -> bool:
