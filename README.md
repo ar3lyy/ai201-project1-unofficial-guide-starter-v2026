@@ -1,7 +1,7 @@
 
 # The Unofficial Guide
 
-**Name:** [Arely Morales]  
+**Name:** Arely Morales  
 **Corpus:** campus_life
 
 This project is part of CodePath AI201. It uses a document retrieval system to answer questions about student experiences on campus.
@@ -69,7 +69,6 @@ The following five chunks were generated using my custom chunking function.
 
     The bad: known damp problem on the ground floor; two rooms were taken offline in 2024.
 
-
 ## Sample Answer
 
 **Question:**
@@ -78,9 +77,9 @@ How are housing lottery numbers assigned to rising sophomores?
 
 **Answer:**
 
-Rising sophomores get a number drawn at random for the housing lottery.
+    Rising sophomores get a number drawn at random for the housing lottery.
 
-Source: admin_housing_lottery.txt
+    Source: admin_housing_lottery.txt
 
 Sources retrieved: admin_dining_dollars.txt, admin_housing_lottery.txt, admin_meal_plan_changes.txt, advising_registration.txt, housing_tamsin_court.txt
 
@@ -103,29 +102,6 @@ There was a clear gap between the two groups. Keeping the cutoff at 0.6 allows a
 | What is the recommended dosage of ibuprofen for a headache? | No | 0.844 |
 | How do I write a for loop in Rust? | No | 0.891 |
 
-**Question:**
-
-**Answer:**
-
-**My relevance cutoff:**
-
-<!-- Record your selected cutoff and explain how you chose it
-using five in-corpus and five out-of-scope retrieval distances. -->
-
-| Question | In corpus? | Best distance |
-|---|---|---|
-| Question 1 | Yes | |
-| Question 2 | Yes | |
-| Question 3 | Yes | |
-| Question 4 | Yes | |
-| Question 5 | Yes | |
-| Out-of-scope 1 | No | |
-| Out-of-scope 2 | No | |
-| Out-of-scope 3 | No | |
-| Out-of-scope 4 | No | |
-| Out-of-scope 5 | No | |
-
-
 ## How I Used AI
 
 **1. Creating my chunking strategy**
@@ -140,11 +116,18 @@ I used ChatGPT to help me understand the retrieval distances from my test questi
 
 # Unit 2
 
-<!-- Complete the following sections during Unit 2.
-Keep your Unit 1 documentation unchanged. -->
-
 ## Run Log — Before
 
+I tested my five campus_life questions three times each using `python run_eval.py --label before`. The evaluation ran with caching disabled so the system generated a new answer for each run. Since I did not have scorer.py, I reviewed the recorded answers manually using my acceptance criteria from Unit 1.
+
+The results were saved in `results/run_2026-10-26_0319_before.md`.
+
+Produced by: `run_eval.py::main`  
+Retrieval: `store.py::search`  
+Chunking: `chunker.py::split_documents`  
+Corpus: `campus_life`  
+Top-k: 5  
+Relevance cutoff: 0.6
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
@@ -153,6 +136,8 @@ Keep your Unit 1 documentation unchanged. -->
 | 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 | 4. Chunks contain complete information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 | 5. Answers include expected information | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+Criterion 4 was checked using the five sample chunks from Unit 1. Since the chunking process is deterministic and had not changed, the same five samples were used across all three inspections.
 
 ### Evidence from the Before Evaluation
 
@@ -164,15 +149,22 @@ Best distance: 0.1928
 
 Sources retrieved: admin_parking_permits.txt, advising_registration.txt, dining_halden_hall.txt, transit_shuttle.txt, transit_walking.txt
 
-The retrieved document admin_parking_permits.txt contains the information that west lot permits sell out in about three days.
+Relevant document content:
 
-Produced by: `store.py::search`
+    On the parking permits
+
+    Student permits for the west lots go on sale in August and sell out in about three days. The east lot never sells out because it's a 12-minute walk.
+
+The retrieved document contains the information needed to answer the question.
+
+Source: `admin_parking_permits.txt`  
+Retrieval produced by: `store.py::search`
 
 **Criterion 2 — Every answer names a source**
 
 Question: How are juniors and seniors prioritized in the housing lottery?
 
-Actual output:
+Actual output from run 1:
 
     Juniors and seniors are ordered first by accumulated credit hours, with any ties broken randomly.
 
@@ -182,76 +174,81 @@ Produced by: `run_eval.py::main`
 
 **Criterion 3 — Relevance gate stops unrelated questions**
 
-Actual output from the evaluation:
+Actual results from the evaluation:
 
-    Out-of-scope questions (the gate should refuse these):
+    Out-of-scope questions:
     refused (best distance 0.825) What is the capital of Mongolia?
     refused (best distance 0.934) How do I change the oil in a diesel engine?
     refused (best distance 0.886) Who won the 1994 World Cup?
     refused (best distance 0.844) What is the recommended dosage of ibuprofen for a headache?
     refused (best distance 0.891) How do I write a for loop in Rust?
-    gate refused 5 of 5
+
+    Gate refused 5 of 5.
 
 Produced by: `run_eval.py::check_out_of_scope`
 
+All five unrelated questions were rejected because their best distances were above the cutoff of 0.6.
+
 **Criterion 4 — Chunks contain complete information**
 
-Sample from the chunk inspection:
+Actual sample chunk:
 
     On the add/drop deadline
 
     You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
 
-Source: `admin_add_drop_deadline.txt#0`
-
+Source: `admin_add_drop_deadline.txt#0`  
 Produced by: `chunker.py::split_documents`
+
+I inspected the five sample chunks from Unit 1. All five contained readable information and complete sentences without being cut off in the middle.
 
 **Criterion 5 — Answers include expected information**
 
 Question: How much does it cost to wash clothes at Morrow House?
 
-Expected phrase: $1.50
+Expected phrase: `$1.50`
 
-Actual output:
+Actual output from run 1:
 
     It costs $1.50 to wash clothes at Morrow House (housing_morrow_house.txt and housing_morrow_house_laundry.txt).
 
 Produced by: `run_eval.py::main`
 
-
-<!-- Paste real evaluation outputs here during Unit 2.
-Include the file and function that produced them. -->
+The answer included the expected information. All five questions included their expected information in all three runs.
 
 ## Verdicts
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
+| 1 | Retrieved chunks contain the answer | MET | All five questions retrieved a chunk containing the correct information in all three runs. This exceeded my target of 4 out of 5. |
+| 2 | Every answer names a source | MET | All 15 generated answers named at least one source document, meeting my target of 5 out of 5 in every run. |
+| 3 | Relevance gate stops unrelated questions | MET | The gate rejected all five out-of-scope questions, exceeding my target of 4 out of 5. |
+| 4 | Chunks contain complete information | MET | All five sampled chunks contained complete thoughts without sentences being cut off, meeting my target of 4 out of 5. |
+| 5 | Answers include expected information | MET | All five questions included their expected phrases from questions.py in all three runs, meeting my target of 4 out of 5. |
 
 ## Diagnoses
 
-<!-- For each missed criterion, explain which stage caused
-the problem and why.
+After reviewing my before-evaluation results, I found that my system met all five acceptance criteria. All five campus_life questions retrieved the information needed to answer them, and every generated answer included a source document. The relevance gate also rejected all five unrelated questions.
 
-Stages: loading, chunking, embedding, retrieval, generation.
+Even though the system passed my tests, I noticed that some of my criteria might have been too easy. For example, my first criterion only requires the correct information to appear somewhere in the retrieved chunks. It doesn't measure whether that information appears near the top of the search results.
 
-If no criteria were missed, explain whether your
-targets were too easy and what you would tighten. -->
+One example is my question about the adviser hold needed for registration. The system answered correctly, but its best retrieval distance was 0.551, which was much higher than the distances for my other campus questions. The correct document, advising_registration.txt, was retrieved, but it appeared fifth in the retrieved source list.
+
+This suggests that retrieval ranking could still be improved. The system currently relies on semantic similarity, which may not always rank documents containing specific terms near the top. In the future, I would make my first criterion stricter by requiring the correct information to appear in the top three retrieved chunks.
 
 ## The Improvement
 
 **What I changed:**
 
+<!-- Complete after implementing one improvement in Milestone 4. -->
+
 **Why I picked it:**
 
-<!-- Connect your change to one of the problems
-you identified in the Diagnoses section. -->
+<!-- Explain how this improvement relates to the limitation identified in Diagnoses. -->
 
 ### Run Log — After
+
+<!-- Run python run_eval.py --label after after making exactly one system improvement. Use the actual results to complete the table. -->
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
@@ -261,17 +258,18 @@ you identified in the Diagnoses section. -->
 | 4. Chunks contain complete information | 4 of 5 | | | | |
 | 5. Answers include expected information | 4 of 5 | | | | |
 
+### Evidence from the After Evaluation
+
+<!-- Paste actual outputs for all five criteria from the after-evaluation results. Include filenames and functions. -->
+
 **Did it help?**
 
-<!-- Explain whether your improvement worked
-using the results from your evaluation. -->
+<!-- Compare the before and after results. Explain whether the change improved, worsened, or did not affect performance. -->
 
 ## What's Still Broken
 
-<!-- Explain any criteria that are still unmet
-and what you would do to improve them. -->
+<!-- Complete in Milestone 5. Explain any criteria still missed after the improvement, what you would do next, and why you stopped. If all criteria are met, explain any remaining limitations honestly. -->
 
 ## What I'd Do Differently
 
-<!-- Explain which acceptance criterion you would
-write differently based on what you learned. -->
+<!-- Complete in Milestone 5. Explain which acceptance criterion you would write differently now that you have seen the results and why. -->
