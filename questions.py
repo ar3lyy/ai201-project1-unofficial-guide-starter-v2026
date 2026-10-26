@@ -22,6 +22,7 @@ names a target of "4 of 5", and four of three is not a thing.
 """
 
 
+
 QUESTIONS = [
     {
         "question": "How are housing lottery numbers assigned to rising sophomores?",
@@ -32,16 +33,16 @@ QUESTIONS = [
         "expects": "credit hours"
     },
     {
-        "question": "What are the requirements for getting a campus parking permit?",
-        "expects": "permit"
+        "question": "How quickly do student parking permits for the west lots sell out?",
+        "expects": "three days"
     },
     {
-        "question": "What should students know about living in Morrow House?",
-        "expects": "Morrow House"
+        "question": "How much does it cost to wash clothes at Morrow House?",
+        "expects": "$1.50"
     },
     {
-        "question": "What do students need to know about course registration?",
-        "expects": "registration"
+        "question": "What must students have lifted before they can register for classes?",
+        "expects": "adviser hold"
     }
 ]
 
